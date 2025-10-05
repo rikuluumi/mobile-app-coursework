@@ -6,6 +6,10 @@ android {
     namespace = "fi.lab.rikuluumi.mobileapp"
     compileSdk = 36
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     defaultConfig {
         applicationId = "fi.lab.rikuluumi.mobileapp"
         minSdk = 24
@@ -14,6 +18,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "API_BASE_URL", "\"${project.findProperty("API_BASE_URL") ?: ""}\"")
     }
 
     buildTypes {

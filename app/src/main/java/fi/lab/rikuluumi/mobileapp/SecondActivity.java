@@ -2,7 +2,6 @@ package fi.lab.rikuluumi.mobileapp;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
@@ -11,22 +10,23 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.appbar.MaterialToolbar;
 
-public class MainActivity extends AppCompatActivity {
+public class SecondActivity extends AppCompatActivity {
 
     private MaterialToolbar topAppBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_second);
+
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_main);
 
         topAppBar = findViewById(R.id.topAppBar);
         setSupportActionBar(topAppBar);
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(android.view.Menu menu) {
         getMenuInflater().inflate(R.menu.top_app_bar_menu, menu);
         return true;
     }
@@ -36,12 +36,11 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.menu_first) {
-            // Already on first page or navigate to it
-            Toast.makeText(this, "First Page clicked", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(SecondActivity.this, MainActivity.class);
+            startActivity(intent);
             return true;
         } else if (id == R.id.menu_second) {
-            Intent intent = new Intent(this, SecondActivity.class);
-            startActivity(intent);
+            Toast.makeText(SecondActivity.this, "Already on Second Page", Toast.LENGTH_SHORT).show();
             return true;
         }
 

@@ -52,7 +52,7 @@ public class LoginActivity extends AppCompatActivity {
 
                 if (responseCode == 200) {
                     // Save credentials locally (but not to GitHub)
-                    SharedPreferences prefs = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
+                    SharedPreferences prefs = getSharedPreferences("VisitorAppPrefs", MODE_PRIVATE);
                     prefs.edit()
                             .putString("username", username)
                             .putString("appPassword", password)

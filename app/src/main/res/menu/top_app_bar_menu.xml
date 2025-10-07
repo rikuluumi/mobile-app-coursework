@@ -11,4 +11,9 @@
         android:id="@+id/menu_second"
         android:title="Second Page"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_logout"
+        android:title="Logout"
+        app:showAsAction="never" />
 </menu>

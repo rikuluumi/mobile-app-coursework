@@ -10,6 +10,9 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -44,7 +47,7 @@ public class LoginActivity extends AppCompatActivity {
                 String credentials = username + ":" + password;
                 String basicAuth = "Basic " + Base64.encodeToString(credentials.getBytes(), Base64.NO_WRAP);
 
-                URL url = new URL(BuildConfig.API_BASE_URL + "/wp-json/wp/v2/users/me");
+                URL url = new URL(BuildConfig.API_BASE_URL + "/wp/v2/users/me");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestProperty("Authorization", basicAuth);
 
@@ -64,9 +67,21 @@ public class LoginActivity extends AppCompatActivity {
                         finish();
                     });
                 } else {
-                    runOnUiThread(() ->
-                            Toast.makeText(this, "Login failed (" + responseCode + ")", Toast.LENGTH_SHORT).show()
-                    );
+                    InputStream errorStream = conn.getErrorStream();
+                    String errorMessage = "";
+                    if (errorStream != null) {
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(errorStream));
+                        StringBuilder sb = new StringBuilder();
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            sb.append(line);
+                        }
+                        reader.close();
+                        errorMessage = sb.toString();
+                    }
+
+                    String finalErrorMessage = "Server error (" + responseCode + "): " + errorMessage;
+                    runOnUiThread(() -> Toast.makeText(this, finalErrorMessage, Toast.LENGTH_LONG).show());
                 }
 
             } catch (Exception e) {

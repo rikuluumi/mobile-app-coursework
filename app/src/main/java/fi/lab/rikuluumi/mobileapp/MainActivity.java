@@ -3,7 +3,6 @@ package fi.lab.rikuluumi.mobileapp;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Base64;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
@@ -25,7 +24,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -35,10 +34,9 @@ public class MainActivity extends AppCompatActivity {
 
         SharedPreferences prefs = getSharedPreferences("VisitorAppPrefs", MODE_PRIVATE);
         String username = prefs.getString("username", null);
-        String appPassword = prefs.getString("appPassword", null);
+        String token = prefs.getString("token", null);
 
-        if (username == null || appPassword == null) {
-            // Not logged in → go to LoginActivity
+        if (username == null || token == null) {
             startActivity(new Intent(this, LoginActivity.class));
             finish();
             return;
@@ -132,75 +130,72 @@ public class MainActivity extends AppCompatActivity {
 
     private void logVisit(String siteName) {
         new Thread(() -> {
+            HttpURLConnection conn = null;
             try {
                 URL url = new URL(BuildConfig.API_BASE_URL + "/visitorlog/v1/add");
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
                 conn.setDoOutput(true);
 
-                // Basic Auth
                 SharedPreferences prefs = getSharedPreferences("VisitorAppPrefs", MODE_PRIVATE);
-                String username = prefs.getString("username", "");
-                String appPassword = prefs.getString("appPassword", "");
-                if (username.isEmpty() || appPassword.isEmpty()) {
+                String token = prefs.getString("token", "");
+
+                if (token.isEmpty()) {
                     runOnUiThread(() ->
-                            Toast.makeText(this, "No login credentials found", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, "No login token found, please log in again", Toast.LENGTH_SHORT).show()
                     );
                     return;
                 }
 
-                String credentials = username + ":" + appPassword;
-                String basicAuth = "Basic " + Base64.encodeToString(credentials.getBytes(), Base64.NO_WRAP);
-                conn.setRequestProperty("Authorization", basicAuth);
+                conn.setRequestProperty("Authorization", "Bearer " + token);
 
-                // Send POST data
-                String postData = "site_name=" + URLEncoder.encode(siteName, "UTF-8");
+                JSONObject body = new JSONObject();
+                body.put("site_name", siteName);
+
                 OutputStream os = conn.getOutputStream();
-                os.write(postData.getBytes());
-                os.flush();
+                os.write(body.toString().getBytes(StandardCharsets.UTF_8));
                 os.close();
 
-                // Read response
-                InputStream is;
-                if (conn.getResponseCode() < HttpURLConnection.HTTP_BAD_REQUEST) {
-                    is = conn.getInputStream();
-                } else {
-                    is = conn.getErrorStream();
-                }
+                int responseCode = conn.getResponseCode();
+                InputStream is = (responseCode < HttpURLConnection.HTTP_BAD_REQUEST)
+                        ? conn.getInputStream()
+                        : conn.getErrorStream();
+
                 BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-                StringBuilder response = new StringBuilder();
+                StringBuilder responseBuilder = new StringBuilder();
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    response.append(line);
+                    responseBuilder.append(line);
                 }
                 reader.close();
 
-                // Parse JSON response
+                String responseText = responseBuilder.toString();
+
                 String message;
                 try {
-                    JSONObject json = new JSONObject(response.toString());
-                    if (json.has("success") && json.getBoolean("success")) {
-                        message = "Visit logged!";
-                    } else if (json.has("error")) {
-                        message = "Error: " + json.getString("error");
+                    JSONObject json = new JSONObject(responseText);
+                    if (json.optBoolean("success", false)) {
+                        message = "Visit logged successfully!";
+                    } else if (json.has("message")) {
+                        message = "Error: " + json.getString("message");
                     } else {
-                        message = "Unexpected response";
+                        message = "Unexpected response: " + responseText;
                     }
                 } catch (JSONException e) {
-                    message = "Invalid response from server";
+                    message = "Invalid JSON response: " + responseText;
                 }
 
                 String finalMessage = message;
-                runOnUiThread(() ->
-                        Toast.makeText(this, finalMessage, Toast.LENGTH_SHORT).show()
-                );
+                runOnUiThread(() -> Toast.makeText(this, finalMessage, Toast.LENGTH_LONG).show());
 
-                conn.disconnect();
             } catch (Exception e) {
                 e.printStackTrace();
                 runOnUiThread(() ->
-                        Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show()
                 );
+            } finally {
+                if (conn != null) conn.disconnect();
             }
         }).start();
     }

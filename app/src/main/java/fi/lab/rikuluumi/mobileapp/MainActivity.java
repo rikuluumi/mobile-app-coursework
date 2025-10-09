@@ -5,26 +5,19 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -48,11 +41,11 @@ public class MainActivity extends AppCompatActivity {
         MaterialToolbar topAppBar = findViewById(R.id.topAppBar);
         setSupportActionBar(topAppBar);
 
-        Button buttonSiteA = findViewById(R.id.buttonSiteA);
-        Button buttonSiteB = findViewById(R.id.buttonSiteB);
+        //Button buttonSiteA = findViewById(R.id.buttonSiteA);
+        //Button buttonSiteB = findViewById(R.id.buttonSiteB);
 
-        buttonSiteA.setOnClickListener(v -> logVisit("Site A"));
-        buttonSiteB.setOnClickListener(v -> logVisit("Site B"));
+        //buttonSiteA.setOnClickListener(v -> logVisit("Site A"));
+        //buttonSiteB.setOnClickListener(v -> logVisit("Site B"));
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
         bottomNavigationView.setSelectedItemId(R.id.nav_home);
@@ -84,6 +77,19 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+
+        RecyclerView popularRecyclerView = findViewById(R.id.popularRecyclerView);
+        popularRecyclerView.setLayoutManager(
+                new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        );
+
+        List<Recipe> popularRecipes = new ArrayList<>();
+        popularRecipes.add(new Recipe("Spaghetti Carbonara", "20 min | Medium", R.drawable.ic_placeholder));
+        popularRecipes.add(new Recipe("Avocado Toast", "10 min | Easy", R.drawable.ic_placeholder));
+        popularRecipes.add(new Recipe("Chicken Curry", "30 min | Medium", R.drawable.ic_placeholder));
+
+        RecipeAdapter adapter = new RecipeAdapter(popularRecipes);
+        popularRecyclerView.setAdapter(adapter);
     }
 
     @Override
@@ -128,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
                 .show();
     }
 
-    private void logVisit(String siteName) {
+    /*private void logVisit(String siteName) {
         new Thread(() -> {
             HttpURLConnection conn = null;
             try {
@@ -198,5 +204,5 @@ public class MainActivity extends AppCompatActivity {
                 if (conn != null) conn.disconnect();
             }
         }).start();
-    }
+    }*/
 }

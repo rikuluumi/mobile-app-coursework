@@ -8,6 +8,7 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class MyRecipesActivity extends AppCompatActivity {
 
@@ -17,6 +18,12 @@ public class MyRecipesActivity extends AppCompatActivity {
 
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_my_recipes);
+
+        FloatingActionButton addRecipeButton = findViewById(R.id.addRecipeButton);
+        addRecipeButton.setOnClickListener(v -> {
+            Intent intent = new Intent(MyRecipesActivity.this, CreateRecipeActivity.class);
+            startActivity(intent);
+        });
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
         bottomNavigationView.setSelectedItemId(R.id.nav_my_recipes);

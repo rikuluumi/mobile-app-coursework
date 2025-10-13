@@ -4,8 +4,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="8dp"
-    android:layout_marginEnd="12dp"
-    android:background="@drawable/recipe_card_bg">
+    android:layout_marginEnd="12dp">
 
     <ImageView
         android:id="@+id/recipeImage"

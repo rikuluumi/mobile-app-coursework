@@ -8,8 +8,10 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.TaskStackBuilder;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -55,28 +57,31 @@ public class MainActivity extends AppCompatActivity {
         bottomNavigationView.setOnItemSelectedListener(new BottomNavigationView.OnItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(MenuItem item) {
+                Intent homeIntent = new Intent(getApplicationContext(), MainActivity.class);
+                Intent targetIntent;
                 int id = item.getItemId();
-
                 if (id == R.id.nav_home) {
-                    return true; // already on Home
+                    return true;
                 }
                 else if (id == R.id.nav_favorites) {
-                    startActivity(new Intent(getApplicationContext(), FavoritesActivity.class));
-                    overridePendingTransition(0, 0);
-                    return true;
+                    targetIntent = new Intent(getApplicationContext(), FavoritesActivity.class);
                 }
                 else if (id == R.id.nav_my_recipes) {
-                    startActivity(new Intent(getApplicationContext(), MyRecipesActivity.class));
-                    overridePendingTransition(0, 0);
-                    return true;
+                    targetIntent = new Intent(getApplicationContext(), MyRecipesActivity.class);
                 }
                 else if (id == R.id.nav_profile) {
-                    startActivity(new Intent(getApplicationContext(), ProfileActivity.class));
-                    overridePendingTransition(0, 0);
-                    return true;
+                    targetIntent = new Intent(getApplicationContext(), ProfileActivity.class);
+                }
+                else {
+                    return false;
                 }
 
-                return false;
+                TaskStackBuilder.create(getApplicationContext())
+                        .addNextIntent(homeIntent)
+                        .addNextIntent(targetIntent)
+                        .startActivities();
+
+                return true;
             }
         });
 
@@ -126,6 +131,13 @@ public class MainActivity extends AppCompatActivity {
                 );
             }
         }).start();
+
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                finishAffinity();
+            }
+        });
     }
 
     @Override

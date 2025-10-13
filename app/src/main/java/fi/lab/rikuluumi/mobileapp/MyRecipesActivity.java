@@ -6,6 +6,7 @@ import android.view.MenuItem;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.TaskStackBuilder;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -31,28 +32,35 @@ public class MyRecipesActivity extends AppCompatActivity {
         bottomNavigationView.setOnItemSelectedListener(new BottomNavigationView.OnItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(MenuItem item) {
-                int id = item.getItemId();
+                Intent homeIntent = new Intent(getApplicationContext(), MainActivity.class);
+                Intent targetIntent;
 
+                int id = item.getItemId();
                 if (id == R.id.nav_home) {
-                    startActivity(new Intent(getApplicationContext(), MainActivity.class));
-                    overridePendingTransition(0, 0);
+                    TaskStackBuilder.create(getApplicationContext())
+                            .addNextIntent(homeIntent)
+                            .startActivities();
                     return true;
                 }
                 else if (id == R.id.nav_favorites) {
-                    startActivity(new Intent(getApplicationContext(), FavoritesActivity.class));
-                    overridePendingTransition(0, 0);
-                    return true;
+                    targetIntent = new Intent(getApplicationContext(), FavoritesActivity.class);
                 }
                 else if (id == R.id.nav_my_recipes) {
                     return true;
                 }
                 else if (id == R.id.nav_profile) {
-                    startActivity(new Intent(getApplicationContext(), ProfileActivity.class));
-                    overridePendingTransition(0, 0);
-                    return true;
+                    targetIntent = new Intent(getApplicationContext(), ProfileActivity.class);
+                }
+                else {
+                    return false;
                 }
 
-                return false;
+                TaskStackBuilder.create(getApplicationContext())
+                        .addNextIntent(homeIntent)
+                        .addNextIntent(targetIntent)
+                        .startActivities();
+
+                return true;
             }
         });
     }

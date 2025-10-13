@@ -5,7 +5,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
+
 import java.util.List;
 
 public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeViewHolder> {
@@ -39,7 +43,10 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeView
         Recipe recipe = recipes.get(position);
         holder.recipeTitle.setText(recipe.getTitle());
         holder.recipeInfo.setText(recipe.getInfo());
-        holder.recipeImage.setImageResource(recipe.getImageResId());
+        Glide.with(holder.itemView.getContext())
+                .load(recipe.getImageUrl())
+                .placeholder(R.drawable.ic_placeholder)
+                .into(holder.recipeImage);
     }
 
     @Override

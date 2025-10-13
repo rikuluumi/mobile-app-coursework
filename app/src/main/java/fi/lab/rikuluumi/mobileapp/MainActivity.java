@@ -16,6 +16,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,12 +48,6 @@ public class MainActivity extends AppCompatActivity {
 
         MaterialToolbar topAppBar = findViewById(R.id.topAppBar);
         setSupportActionBar(topAppBar);
-
-        //Button buttonSiteA = findViewById(R.id.buttonSiteA);
-        //Button buttonSiteB = findViewById(R.id.buttonSiteB);
-
-        //buttonSiteA.setOnClickListener(v -> logVisit("Site A"));
-        //buttonSiteB.setOnClickListener(v -> logVisit("Site B"));
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
         bottomNavigationView.setSelectedItemId(R.id.nav_home);
@@ -84,12 +86,46 @@ public class MainActivity extends AppCompatActivity {
         );
 
         List<Recipe> popularRecipes = new ArrayList<>();
-        popularRecipes.add(new Recipe("Spaghetti Carbonara", "20 min | Medium", R.drawable.ic_placeholder));
-        popularRecipes.add(new Recipe("Avocado Toast", "10 min | Easy", R.drawable.ic_placeholder));
-        popularRecipes.add(new Recipe("Chicken Curry", "30 min | Medium", R.drawable.ic_placeholder));
-
         RecipeAdapter adapter = new RecipeAdapter(popularRecipes);
         popularRecyclerView.setAdapter(adapter);
+
+        new Thread(() -> {
+            try {
+                URL url = new URL(BuildConfig.API_BASE_URL + "/recipes/v1/popular");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+
+                InputStream is = conn.getInputStream();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line);
+                }
+                reader.close();
+
+                JSONObject jsonResponse = new JSONObject(sb.toString());
+                if (jsonResponse.getBoolean("success")) {
+                    JSONArray data = jsonResponse.getJSONArray("data");
+                    for (int i = 0; i < data.length(); i++) {
+                        JSONObject recipeObj = data.getJSONObject(i);
+                        String title = recipeObj.getString("title");
+                        String info = recipeObj.getString("info");
+                        String imageUrl = recipeObj.getString("image_url");
+
+                        popularRecipes.add(new Recipe(title, info, imageUrl));
+                    }
+
+                    runOnUiThread(adapter::notifyDataSetChanged);
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                runOnUiThread(() ->
+                        Toast.makeText(this, "Error fetching recipes: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                );
+            }
+        }).start();
     }
 
     @Override
@@ -133,76 +169,4 @@ public class MainActivity extends AppCompatActivity {
                 .setNegativeButton("Cancel", null)
                 .show();
     }
-
-    /*private void logVisit(String siteName) {
-        new Thread(() -> {
-            HttpURLConnection conn = null;
-            try {
-                URL url = new URL(BuildConfig.API_BASE_URL + "/visitorlog/v1/add");
-                conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("POST");
-                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-                conn.setDoOutput(true);
-
-                SharedPreferences prefs = getSharedPreferences("VisitorAppPrefs", MODE_PRIVATE);
-                String token = prefs.getString("token", "");
-
-                if (token.isEmpty()) {
-                    runOnUiThread(() ->
-                            Toast.makeText(this, "No login token found, please log in again", Toast.LENGTH_SHORT).show()
-                    );
-                    return;
-                }
-
-                conn.setRequestProperty("Authorization", "Bearer " + token);
-
-                JSONObject body = new JSONObject();
-                body.put("site_name", siteName);
-
-                OutputStream os = conn.getOutputStream();
-                os.write(body.toString().getBytes(StandardCharsets.UTF_8));
-                os.close();
-
-                int responseCode = conn.getResponseCode();
-                InputStream is = (responseCode < HttpURLConnection.HTTP_BAD_REQUEST)
-                        ? conn.getInputStream()
-                        : conn.getErrorStream();
-
-                BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-                StringBuilder responseBuilder = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    responseBuilder.append(line);
-                }
-                reader.close();
-
-                String responseText = responseBuilder.toString();
-
-                String message;
-                try {
-                    JSONObject json = new JSONObject(responseText);
-                    if (json.optBoolean("success", false)) {
-                        message = "Visit logged successfully!";
-                    } else if (json.has("message")) {
-                        message = "Error: " + json.getString("message");
-                    } else {
-                        message = "Unexpected response: " + responseText;
-                    }
-                } catch (JSONException e) {
-                    message = "Invalid JSON response: " + responseText;
-                }
-
-                String finalMessage = message;
-                runOnUiThread(() -> Toast.makeText(this, finalMessage, Toast.LENGTH_LONG).show());
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                runOnUiThread(() ->
-                        Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show()
-                );
-            } finally {
-                if (conn != null) conn.disconnect();
-            }
-        }).start();
-    }*/
 }

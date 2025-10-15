@@ -33,6 +33,7 @@ public class ProfileActivity extends AppCompatActivity {
                     TaskStackBuilder.create(getApplicationContext())
                             .addNextIntent(homeIntent)
                             .startActivities();
+                    overridePendingTransition(0, 0);
                     return true;
                 }
                 else if (id == R.id.nav_favorites) {
@@ -52,7 +53,7 @@ public class ProfileActivity extends AppCompatActivity {
                         .addNextIntent(homeIntent)
                         .addNextIntent(targetIntent)
                         .startActivities();
-
+                overridePendingTransition(0, 0);
                 return true;
             }
         });

@@ -7,7 +7,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -45,7 +44,6 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
         MaterialToolbar topAppBar = findViewById(R.id.topAppBar);
@@ -80,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
                         .addNextIntent(homeIntent)
                         .addNextIntent(targetIntent)
                         .startActivities();
-
+                overridePendingTransition(0, 0);
                 return true;
             }
         });
@@ -99,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
                 URL url = new URL(BuildConfig.API_BASE_URL + "/recipes/v1/popular");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
+                conn.setRequestProperty("Authorization", "Bearer " + token);
 
                 InputStream is = conn.getInputStream();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(is));

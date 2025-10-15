@@ -16,6 +16,10 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeView
 
     private List<Recipe> recipes;
 
+    public RecipeAdapter(List<Recipe> recipes) {
+        this.recipes = recipes;
+    }
+
     public static class RecipeViewHolder extends RecyclerView.ViewHolder {
         ImageView recipeImage;
         TextView recipeTitle, recipeInfo;
@@ -26,10 +30,6 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeView
             recipeTitle = itemView.findViewById(R.id.recipeTitle);
             recipeInfo = itemView.findViewById(R.id.recipeInfo);
         }
-    }
-
-    public RecipeAdapter(List<Recipe> recipes) {
-        this.recipes = recipes;
     }
 
     @Override

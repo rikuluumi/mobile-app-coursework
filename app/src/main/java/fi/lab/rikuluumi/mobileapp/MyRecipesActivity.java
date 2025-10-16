@@ -142,11 +142,16 @@ public class MyRecipesActivity extends AppCompatActivity {
                         String info = recipeObj.getString("description");
                         String imageUrl = recipeObj.getString("image_url");
 
-                        myRecipes.add(new Recipe(title, info, imageUrl));
+                        myRecipes.add(new Recipe(title, info, imageUrl, 1));
                     }
 
                     runOnUiThread(() -> {
                         adapter.notifyDataSetChanged();
+                        adapter.setOnItemClickListener(recipe -> {
+                            Intent intent = new Intent(getApplicationContext(), ViewRecipeActivity.class);
+                            intent.putExtra("recipe_id", 1);
+                            startActivity(intent);
+                        });
                         swipeRefreshLayout.setRefreshing(false);
                     });
                 } else {

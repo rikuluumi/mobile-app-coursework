@@ -15,6 +15,15 @@ import java.util.List;
 public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeViewHolder> {
 
     private List<Recipe> recipes;
+    private OnItemClickListener listener;
+
+    public interface OnItemClickListener {
+        void onItemClick(Recipe recipe);
+    }
+
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.listener = listener;
+    }
 
     public RecipeAdapter(List<Recipe> recipes) {
         this.recipes = recipes;
@@ -43,6 +52,12 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeView
         Recipe recipe = recipes.get(position);
         holder.recipeTitle.setText(recipe.getTitle());
         holder.recipeInfo.setText(recipe.getInfo());
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onItemClick(recipe);
+            }
+        });
+
         Glide.with(holder.itemView.getContext())
                 .load(recipe.getImageUrl())
                 .placeholder(R.drawable.ic_placeholder)

@@ -113,6 +113,8 @@ public class CreateRecipeActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     if (json.optBoolean("success")) {
                         Toast.makeText(this, "Recipe added!", Toast.LENGTH_SHORT).show();
+                        Intent resultIntent = new Intent();
+                        setResult(RESULT_OK, resultIntent);
                         finish();
                     } else {
                         Toast.makeText(this, "Error: " + json.optString("message"), Toast.LENGTH_LONG).show();

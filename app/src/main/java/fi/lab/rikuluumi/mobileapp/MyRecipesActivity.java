@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.TaskStackBuilder;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -33,6 +35,14 @@ public class MyRecipesActivity extends AppCompatActivity {
     private List<Recipe> myRecipes = new ArrayList<>();
     private SwipeRefreshLayout swipeRefreshLayout;
 
+    private final ActivityResultLauncher<Intent> addRecipeLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == RESULT_OK) {
+                    swipeRefreshLayout.setRefreshing(true);
+                    fetchMyRecipes();
+                }
+            });
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,7 +51,7 @@ public class MyRecipesActivity extends AppCompatActivity {
         FloatingActionButton addRecipeButton = findViewById(R.id.addRecipeButton);
         addRecipeButton.setOnClickListener(v -> {
             Intent intent = new Intent(MyRecipesActivity.this, CreateRecipeActivity.class);
-            startActivity(intent);
+            addRecipeLauncher.launch(intent);
         });
 
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);

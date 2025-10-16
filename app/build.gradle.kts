@@ -47,4 +47,5 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     implementation("com.github.bumptech.glide:glide:5.0.5")
     annotationProcessor("com.github.bumptech.glide:compiler:5.0.5")
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 }

@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.TaskStackBuilder;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -30,6 +31,7 @@ public class MyRecipesActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private RecipeAdapter adapter;
     private List<Recipe> myRecipes = new ArrayList<>();
+    private SwipeRefreshLayout swipeRefreshLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,11 +44,14 @@ public class MyRecipesActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
         recyclerView = findViewById(R.id.myRecipesRecyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new RecipeAdapter(myRecipes);
         recyclerView.setAdapter(adapter);
+        swipeRefreshLayout.setOnRefreshListener(this::fetchMyRecipes);
 
+        swipeRefreshLayout.setRefreshing(true);
         fetchMyRecipes();
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
@@ -130,20 +135,25 @@ public class MyRecipesActivity extends AppCompatActivity {
                         myRecipes.add(new Recipe(title, info, imageUrl));
                     }
 
-                    runOnUiThread(() -> adapter.notifyDataSetChanged());
+                    runOnUiThread(() -> {
+                        adapter.notifyDataSetChanged();
+                        swipeRefreshLayout.setRefreshing(false);
+                    });
                 } else {
-                    runOnUiThread(() ->
-                            Toast.makeText(this, "Failed to fetch recipes", Toast.LENGTH_SHORT).show()
-                    );
+                    runOnUiThread(() -> {
+                        Toast.makeText(this, "Failed to fetch recipes", Toast.LENGTH_SHORT).show();
+                        swipeRefreshLayout.setRefreshing(false);
+                    });
                 }
 
                 conn.disconnect();
 
             } catch (Exception e) {
                 e.printStackTrace();
-                runOnUiThread(() ->
-                        Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show()
-                );
+                runOnUiThread(() -> {
+                    Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    swipeRefreshLayout.setRefreshing(false);
+                });
             }
         }).start();
     }

@@ -81,8 +81,8 @@ public class MyRecipesActivity extends AppCompatActivity {
                     overridePendingTransition(0, 0);
                     return true;
                 }
-                else if (id == R.id.nav_favorites) {
-                    targetIntent = new Intent(getApplicationContext(), FavoritesActivity.class);
+                else if (id == R.id.nav_search) {
+                    targetIntent = new Intent(getApplicationContext(), SearchActivity.class);
                 }
                 else if (id == R.id.nav_my_recipes) {
                     return true;

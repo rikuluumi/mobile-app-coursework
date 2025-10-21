@@ -61,8 +61,8 @@ public class MainActivity extends AppCompatActivity {
                 if (id == R.id.nav_home) {
                     return true;
                 }
-                else if (id == R.id.nav_favorites) {
-                    targetIntent = new Intent(getApplicationContext(), FavoritesActivity.class);
+                else if (id == R.id.nav_search) {
+                    targetIntent = new Intent(getApplicationContext(), SearchActivity.class);
                 }
                 else if (id == R.id.nav_my_recipes) {
                     targetIntent = new Intent(getApplicationContext(), MyRecipesActivity.class);

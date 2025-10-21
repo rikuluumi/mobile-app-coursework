@@ -27,7 +27,7 @@
             android:name=".MyRecipesActivity"
             android:exported="false" />
         <activity
-            android:name=".FavoritesActivity"
+            android:name=".SearchActivity"
             android:exported="false" />
         <activity
             android:name=".LoginActivity"

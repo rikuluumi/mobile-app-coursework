@@ -10,7 +10,7 @@ import androidx.core.app.TaskStackBuilder;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-public class FavoritesActivity extends AppCompatActivity {
+public class SearchActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,7 +20,7 @@ public class FavoritesActivity extends AppCompatActivity {
         setContentView(R.layout.activity_favorites);
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
-        bottomNavigationView.setSelectedItemId(R.id.nav_favorites);
+        bottomNavigationView.setSelectedItemId(R.id.nav_search);
 
         bottomNavigationView.setOnItemSelectedListener(new BottomNavigationView.OnItemSelectedListener() {
             @Override
@@ -36,7 +36,7 @@ public class FavoritesActivity extends AppCompatActivity {
                     overridePendingTransition(0, 0);
                     return true;
                 }
-                else if (id == R.id.nav_favorites) {
+                else if (id == R.id.nav_search) {
                     return true;
                 }
                 else if (id == R.id.nav_my_recipes) {

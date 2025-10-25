@@ -138,18 +138,20 @@ public class MyRecipesActivity extends AppCompatActivity {
                     myRecipes.clear();
                     for (int i = 0; i < data.length(); i++) {
                         JSONObject recipeObj = data.getJSONObject(i);
+                        int id = recipeObj.getInt("id");
                         String title = recipeObj.getString("title");
                         String info = recipeObj.getString("description");
                         String imageUrl = recipeObj.getString("image_url");
 
-                        myRecipes.add(new Recipe(title, info, imageUrl, 1));
+                        myRecipes.add(new Recipe(title, info, imageUrl, id));
                     }
 
                     runOnUiThread(() -> {
                         adapter.notifyDataSetChanged();
                         adapter.setOnItemClickListener(recipe -> {
                             Intent intent = new Intent(getApplicationContext(), ViewRecipeActivity.class);
-                            intent.putExtra("recipe_id", 1);
+                            intent.putExtra("recipe_id", recipe.getId());
+                            intent.putExtra("recipe_title", recipe.getTitle());
                             startActivity(intent);
                         });
                         swipeRefreshLayout.setRefreshing(false);

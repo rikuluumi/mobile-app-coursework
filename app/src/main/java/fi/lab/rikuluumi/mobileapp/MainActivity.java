@@ -113,14 +113,23 @@ public class MainActivity extends AppCompatActivity {
                     JSONArray data = jsonResponse.getJSONArray("data");
                     for (int i = 0; i < data.length(); i++) {
                         JSONObject recipeObj = data.getJSONObject(i);
+                        int id = recipeObj.getInt("id");
                         String title = recipeObj.getString("title");
-                        String info = recipeObj.getString("info");
+                        String info = recipeObj.getString("description");
                         String imageUrl = recipeObj.getString("image_url");
 
-                        popularRecipes.add(new Recipe(title, info, imageUrl, 1));
+                        popularRecipes.add(new Recipe(title, info, imageUrl, id));
                     }
 
-                    runOnUiThread(adapter::notifyDataSetChanged);
+                    runOnUiThread(() -> {
+                        adapter.notifyDataSetChanged();
+                        adapter.setOnItemClickListener(recipe -> {
+                            Intent intent = new Intent(getApplicationContext(), ViewRecipeActivity.class);
+                            intent.putExtra("recipe_id", recipe.getId());
+                            intent.putExtra("recipe_title", recipe.getTitle());
+                            startActivity(intent);
+                        });
+                    });
                 }
 
             } catch (Exception e) {

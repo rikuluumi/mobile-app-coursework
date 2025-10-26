@@ -24,6 +24,7 @@ public class ViewRecipeActivity extends AppCompatActivity {
     private TextView title;
     private ImageView image;
     private TextView description;
+    private ImageView favoriteButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +34,7 @@ public class ViewRecipeActivity extends AppCompatActivity {
         title = findViewById(R.id.title);
         image = findViewById(R.id.recipeImagePreview);
         description = findViewById(R.id.description);
+        favoriteButton = findViewById(R.id.ivFavorite);
         recipeId = getIntent().getIntExtra("recipe_id", 0);
 
         loadRecipe();
@@ -74,10 +76,11 @@ public class ViewRecipeActivity extends AppCompatActivity {
 
                     JSONObject data = jsonResponse.getJSONObject("data");
                     Recipe recipe = new Recipe(
+                            recipeId,
                             data.getString("title"),
                             data.getString("description"),
                             data.getString("image_url"),
-                            recipeId);
+                            data.getBoolean("favorite"));
 
                     runOnUiThread(()->showRecipe(recipe));
                 } else {
@@ -102,5 +105,10 @@ public class ViewRecipeActivity extends AppCompatActivity {
                 .load(recipe.getImageUrl())
                 .placeholder(R.drawable.ic_placeholder)
                 .into(image);
+        if (recipe.getIsFavorite()) {
+            favoriteButton.setImageResource(R.drawable.ic_favorite_24_fill);
+        } else {
+            favoriteButton.setImageResource(R.drawable.ic_favorite_24);
+        }
     }
 }

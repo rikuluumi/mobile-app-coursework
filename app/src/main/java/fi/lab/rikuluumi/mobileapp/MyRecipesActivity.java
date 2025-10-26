@@ -143,7 +143,7 @@ public class MyRecipesActivity extends AppCompatActivity {
                         String info = recipeObj.getString("description");
                         String imageUrl = recipeObj.getString("image_url");
 
-                        myRecipes.add(new Recipe(title, info, imageUrl, id));
+                        myRecipes.add(new Recipe(id, title, info, imageUrl, false));
                     }
 
                     runOnUiThread(() -> {

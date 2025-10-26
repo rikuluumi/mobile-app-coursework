@@ -15,6 +15,7 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -25,6 +26,7 @@ public class ViewRecipeActivity extends AppCompatActivity {
     private ImageView image;
     private TextView description;
     private ImageView favoriteButton;
+    private boolean isFavorite;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +38,8 @@ public class ViewRecipeActivity extends AppCompatActivity {
         description = findViewById(R.id.description);
         favoriteButton = findViewById(R.id.ivFavorite);
         recipeId = getIntent().getIntExtra("recipe_id", 0);
+
+        favoriteButton.setOnClickListener(v -> toggleFavorite());
 
         loadRecipe();
     }
@@ -75,12 +79,13 @@ public class ViewRecipeActivity extends AppCompatActivity {
                 if (jsonResponse.optBoolean("success", false)) {
 
                     JSONObject data = jsonResponse.getJSONObject("data");
+                    isFavorite = data.getBoolean("favorite");
                     Recipe recipe = new Recipe(
                             recipeId,
                             data.getString("title"),
                             data.getString("description"),
                             data.getString("image_url"),
-                            data.getBoolean("favorite"));
+                            isFavorite);
 
                     runOnUiThread(()->showRecipe(recipe));
                 } else {
@@ -98,6 +103,72 @@ public class ViewRecipeActivity extends AppCompatActivity {
         }).start();
     }
 
+    private void toggleFavorite() {
+        SharedPreferences prefs = getSharedPreferences("VisitorAppPrefs", MODE_PRIVATE);
+        String token = prefs.getString("token", null);
+
+        if (token.isEmpty()) {
+            Toast.makeText(this, "Not logged in", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        new Thread(() -> {
+            try {
+                String method = isFavorite ? "DELETE" : "POST";
+                URL url = new URL(BuildConfig.API_BASE_URL + "/recipes/v1/favorite");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod(method);
+                conn.setDoOutput(true);
+                conn.setRequestProperty("Authorization", "Bearer " + token);
+                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                conn.setRequestProperty("Accept", "application/json");
+
+                JSONObject postData = new JSONObject();
+                postData.put("recipe_id", recipeId);
+
+                OutputStream os = conn.getOutputStream();
+                os.write(postData.toString().getBytes("UTF-8"));
+                os.flush();
+                os.close();
+
+                int responseCode = conn.getResponseCode();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(
+                        responseCode < HttpURLConnection.HTTP_BAD_REQUEST ? conn.getInputStream() : conn.getErrorStream()
+                ));
+
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+                reader.close();
+
+                JSONObject responseData = new JSONObject(response.toString());
+
+                if (responseData.optBoolean("success")) {
+                    JSONObject data = responseData.getJSONObject("data");
+                    isFavorite = data.getBoolean("favorite_status");
+                    String responseMessage = isFavorite ? "Recipe set to favorite!" : "Recipe removed from favorites" ;
+                    runOnUiThread(() -> {
+                        Toast.makeText(this, responseMessage, Toast.LENGTH_SHORT).show();
+                        updateFavoriteButton();
+                    });
+
+                } else {
+                    runOnUiThread(() -> {
+                        Toast.makeText(this, "Error: " + responseData.optString("message"), Toast.LENGTH_LONG).show();
+                    });
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                runOnUiThread(() -> {
+                    Toast.makeText(this, "Error on setting favorite", Toast.LENGTH_SHORT).show();
+                });
+            }
+
+        }).start();
+    }
+
     private void showRecipe(Recipe recipe) {
         title.setText(recipe.getTitle());
         description.setText(recipe.getInfo());
@@ -105,7 +176,11 @@ public class ViewRecipeActivity extends AppCompatActivity {
                 .load(recipe.getImageUrl())
                 .placeholder(R.drawable.ic_placeholder)
                 .into(image);
-        if (recipe.getIsFavorite()) {
+        updateFavoriteButton();
+    }
+
+    private void updateFavoriteButton() {
+        if (isFavorite) {
             favoriteButton.setImageResource(R.drawable.ic_favorite_24_fill);
         } else {
             favoriteButton.setImageResource(R.drawable.ic_favorite_24);

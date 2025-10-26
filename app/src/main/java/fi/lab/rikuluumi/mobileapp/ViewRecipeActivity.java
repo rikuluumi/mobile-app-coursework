@@ -27,6 +27,7 @@ public class ViewRecipeActivity extends AppCompatActivity {
     private TextView description;
     private ImageView favoriteButton;
     private boolean isFavorite;
+    private boolean isOwn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +41,7 @@ public class ViewRecipeActivity extends AppCompatActivity {
         recipeId = getIntent().getIntExtra("recipe_id", 0);
 
         favoriteButton.setOnClickListener(v -> toggleFavorite());
+        favoriteButton.setVisibility(TextView.GONE);
 
         loadRecipe();
     }
@@ -47,6 +49,7 @@ public class ViewRecipeActivity extends AppCompatActivity {
     private void loadRecipe() {
         SharedPreferences prefs = getSharedPreferences("VisitorAppPrefs", MODE_PRIVATE);
         String token = prefs.getString("token", null);
+        int userId = prefs.getInt("user_id", 0);
 
         if (token.isEmpty()) {
             Toast.makeText(this, "Not logged in", Toast.LENGTH_SHORT).show();
@@ -80,6 +83,8 @@ public class ViewRecipeActivity extends AppCompatActivity {
 
                     JSONObject data = jsonResponse.getJSONObject("data");
                     isFavorite = data.getBoolean("favorite");
+                    isOwn = data.getInt("user_id") == userId;
+
                     Recipe recipe = new Recipe(
                             recipeId,
                             data.getString("title"),
@@ -180,10 +185,15 @@ public class ViewRecipeActivity extends AppCompatActivity {
     }
 
     private void updateFavoriteButton() {
-        if (isFavorite) {
-            favoriteButton.setImageResource(R.drawable.ic_favorite_24_fill);
+        if (isOwn) {
+            favoriteButton.setVisibility(TextView.GONE);
         } else {
-            favoriteButton.setImageResource(R.drawable.ic_favorite_24);
+            favoriteButton.setVisibility(TextView.VISIBLE);
+            if (isFavorite) {
+                favoriteButton.setImageResource(R.drawable.ic_favorite_24_fill);
+            } else {
+                favoriteButton.setImageResource(R.drawable.ic_favorite_24);
+            }
         }
     }
 }

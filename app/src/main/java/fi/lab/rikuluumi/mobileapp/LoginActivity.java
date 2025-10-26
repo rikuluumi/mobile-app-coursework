@@ -81,11 +81,13 @@ public class LoginActivity extends AppCompatActivity {
 
                     if (response.getBoolean("success")) {
                         String token = response.getString("token");
+                        int userId = response.getInt("user_id");
 
                         SharedPreferences prefs = getSharedPreferences("VisitorAppPrefs", MODE_PRIVATE);
                         prefs.edit()
                                 .putString("username", username)
                                 .putString("token", token)
+                                .putInt("user_id", userId)
                                 .apply();
 
                         runOnUiThread(() -> {

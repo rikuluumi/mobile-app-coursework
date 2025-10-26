@@ -3,18 +3,14 @@ package fi.lab.rikuluumi.mobileapp;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.TaskStackBuilder;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import org.json.JSONArray;
@@ -28,11 +24,13 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends com.example.myapp.BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        setupToolbar(R.id.topAppBar);
 
         SharedPreferences prefs = getSharedPreferences("VisitorAppPrefs", MODE_PRIVATE);
         String username = prefs.getString("username", null);
@@ -43,11 +41,6 @@ public class MainActivity extends AppCompatActivity {
             finish();
             return;
         }
-
-        setContentView(R.layout.activity_main);
-
-        MaterialToolbar topAppBar = findViewById(R.id.topAppBar);
-        setSupportActionBar(topAppBar);
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
         bottomNavigationView.setSelectedItemId(R.id.nav_home);
@@ -146,47 +139,5 @@ public class MainActivity extends AppCompatActivity {
                 finishAffinity();
             }
         });
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.top_app_bar_menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == R.id.menu_first) {
-            // Already on first page or navigate to it
-            Toast.makeText(this, "First Page clicked", Toast.LENGTH_SHORT).show();
-            return true;
-        } else if (id == R.id.menu_second) {
-            Intent intent = new Intent(this, SecondActivity.class);
-            startActivity(intent);
-            return true;
-        } else if (id == R.id.menu_logout) {
-            logoutUser();
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    private void logoutUser() {
-        new AlertDialog.Builder(this)
-                .setTitle("Logout")
-                .setMessage("Are you sure you want to log out?")
-                .setPositiveButton("Yes", (dialog, which) -> {
-                    SharedPreferences prefs = getSharedPreferences("VisitorAppPrefs", MODE_PRIVATE);
-                    prefs.edit().clear().apply();
-                    Intent intent = new Intent(this, MainActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(intent);
-                    finish();
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
     }
 }

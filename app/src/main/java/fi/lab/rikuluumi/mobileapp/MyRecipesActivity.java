@@ -8,7 +8,6 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.TaskStackBuilder;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -28,7 +27,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MyRecipesActivity extends AppCompatActivity {
+public class MyRecipesActivity extends com.example.myapp.BaseActivity {
 
     private RecyclerView recyclerView;
     private RecipeAdapter adapter;
@@ -47,6 +46,7 @@ public class MyRecipesActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_recipes);
+        setupToolbar(R.id.topAppBar);
 
         FloatingActionButton addRecipeButton = findViewById(R.id.addRecipeButton);
         addRecipeButton.setOnClickListener(v -> {

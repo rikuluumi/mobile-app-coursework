@@ -1,7 +1,6 @@
 package fi.lab.rikuluumi.mobileapp;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -29,18 +28,11 @@ public class MainActivity extends com.example.myapp.BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (!isSessionValid) return;
+
         setContentView(R.layout.activity_main);
         setupToolbar(R.id.topAppBar);
-
-        SharedPreferences prefs = getSharedPreferences("VisitorAppPrefs", MODE_PRIVATE);
-        String username = prefs.getString("username", null);
-        String token = prefs.getString("token", null);
-
-        if (username == null || token == null) {
-            startActivity(new Intent(this, LoginActivity.class));
-            finish();
-            return;
-        }
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
         bottomNavigationView.setSelectedItemId(R.id.nav_home);
@@ -92,7 +84,13 @@ public class MainActivity extends com.example.myapp.BaseActivity {
                 conn.setRequestMethod("GET");
                 conn.setRequestProperty("Authorization", "Bearer " + token);
 
-                InputStream is = conn.getInputStream();
+                InputStream is;
+                if (conn.getResponseCode() < HttpURLConnection.HTTP_BAD_REQUEST) {
+                    is = conn.getInputStream();
+                } else {
+                    is = conn.getErrorStream();
+                }
+
                 BufferedReader reader = new BufferedReader(new InputStreamReader(is));
                 StringBuilder sb = new StringBuilder();
                 String line;
@@ -102,7 +100,9 @@ public class MainActivity extends com.example.myapp.BaseActivity {
                 reader.close();
 
                 JSONObject jsonResponse = new JSONObject(sb.toString());
-                if (jsonResponse.getBoolean("success")) {
+                if (!checkPermissionFromResponse(jsonResponse)) return;
+
+                if (jsonResponse.optBoolean("success", false)) {
                     JSONArray data = jsonResponse.getJSONArray("data");
                     for (int i = 0; i < data.length(); i++) {
                         JSONObject recipeObj = data.getJSONObject(i);
@@ -122,6 +122,10 @@ public class MainActivity extends com.example.myapp.BaseActivity {
                             intent.putExtra("recipe_title", recipe.getTitle());
                             startActivity(intent);
                         });
+                    });
+                } else {
+                    runOnUiThread(() -> {
+                        Toast.makeText(this, "Error: " + jsonResponse.optString("message"), Toast.LENGTH_LONG).show();
                     });
                 }
 

@@ -1,7 +1,6 @@
 package fi.lab.rikuluumi.mobileapp;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -45,6 +44,9 @@ public class MyRecipesActivity extends com.example.myapp.BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (!isSessionValid) return;
+
         setContentView(R.layout.activity_my_recipes);
         setupToolbar(R.id.topAppBar);
 
@@ -111,11 +113,7 @@ public class MyRecipesActivity extends com.example.myapp.BaseActivity {
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("GET");
 
-                SharedPreferences prefs = getSharedPreferences("VisitorAppPrefs", MODE_PRIVATE);
-                String token = prefs.getString("token", null);
-                if (token != null) {
-                    conn.setRequestProperty("Authorization", "Bearer " + token);
-                }
+                conn.setRequestProperty("Authorization", "Bearer " + token);
 
                 InputStream is;
                 if (conn.getResponseCode() < HttpURLConnection.HTTP_BAD_REQUEST) {
@@ -133,6 +131,8 @@ public class MyRecipesActivity extends com.example.myapp.BaseActivity {
                 reader.close();
 
                 JSONObject jsonResponse = new JSONObject(sb.toString());
+                if (!checkPermissionFromResponse(jsonResponse)) return;
+
                 if (jsonResponse.optBoolean("success", false)) {
                     JSONArray data = jsonResponse.getJSONArray("data");
                     myRecipes.clear();
@@ -158,7 +158,7 @@ public class MyRecipesActivity extends com.example.myapp.BaseActivity {
                     });
                 } else {
                     runOnUiThread(() -> {
-                        Toast.makeText(this, "Failed to fetch recipes", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Error: " + jsonResponse.optString("message"), Toast.LENGTH_LONG).show();
                         swipeRefreshLayout.setRefreshing(false);
                     });
                 }

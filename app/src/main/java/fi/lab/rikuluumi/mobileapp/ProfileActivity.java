@@ -13,6 +13,9 @@ public class ProfileActivity extends com.example.myapp.BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (!isSessionValid) return;
+
         setContentView(R.layout.activity_profile);
         setupToolbar(R.id.topAppBar);
 

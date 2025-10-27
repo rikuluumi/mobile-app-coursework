@@ -1,7 +1,6 @@
 package fi.lab.rikuluumi.mobileapp;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.Button;
@@ -36,6 +35,9 @@ public class SearchActivity extends com.example.myapp.BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (!isSessionValid) return;
+
         setContentView(R.layout.activity_search);
         setupToolbar(R.id.topAppBar);
 
@@ -97,14 +99,6 @@ public class SearchActivity extends com.example.myapp.BaseActivity {
     }
 
     private void performSearch(String query) {
-        SharedPreferences prefs = getSharedPreferences("VisitorAppPrefs", MODE_PRIVATE);
-        String token = prefs.getString("token", null);
-
-        if (token.isEmpty()) {
-            Toast.makeText(this, "Not logged in", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         new Thread(() -> {
             try {
                 URL url = new URL(BuildConfig.API_BASE_URL + "/recipes/v1/search");
@@ -135,11 +129,12 @@ public class SearchActivity extends com.example.myapp.BaseActivity {
                 }
                 reader.close();
 
-                JSONObject responseData = new JSONObject(response.toString());
+                JSONObject jsonResponse = new JSONObject(response.toString());
+                if (!checkPermissionFromResponse(jsonResponse)) return;
 
-                if (responseData.optBoolean("success")) {
+                if (jsonResponse.optBoolean("success")) {
                     searchResults.clear();
-                    JSONArray data = responseData.getJSONArray("data");
+                    JSONArray data = jsonResponse.getJSONArray("data");
                     for (int i = 0; i < data.length(); i++) {
                         JSONObject recipeObj = data.getJSONObject(i);
                         int id = recipeObj.getInt("id");
@@ -161,7 +156,7 @@ public class SearchActivity extends com.example.myapp.BaseActivity {
                     });
                 } else {
                     runOnUiThread(() -> {
-                        Toast.makeText(this, "Error: " + responseData.optString("message"), Toast.LENGTH_LONG).show();
+                        Toast.makeText(this, "Error: " + jsonResponse.optString("message"), Toast.LENGTH_LONG).show();
                     });
                 }
             } catch (Exception e) {
